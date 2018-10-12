@@ -15,6 +15,8 @@ import edu.stanford.nlp.simple.Sentence;
 public final class Preprocessor {
     private static Set<String> stopWordSet = new HashSet<String>();
     private static Set<String> NESet = new HashSet<String>();
+    private static File outFile;
+    private static String docString;
     
     static void removeStopWordsTokenizeStemLemmatize(File file) throws IOException {
         // must populate the set the first time this method is called,
@@ -23,19 +25,21 @@ public final class Preprocessor {
             fillStopWordSet();
         }
         
-        File outFile = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
-//        outFile.mkdirs();
-        String docString = generateStringFromDocument(file);
+        outFile = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
+        docString = generateStringFromDocument(file);
         Document doc = new Document(docString);
         removeStopWordsLemmatizeAndSave(doc, outFile);
-        
+    }
+    
+    static void extractNER(File file) throws IOException {
         // the input file is the last outFile. Generate a new output file
         // apply NER to the input and save it
         File outFileNER = new File(generateOutputFilePath(file.toString(), "applyNER"));
         docString = generateStringFromDocument(outFile);
-        doc = new Document(docString);
+        Document doc = new Document(docString);
         addNamedEntitiesToNESet(doc);
         applyNamedEntityExtractionAndSave(doc, outFileNER);
+
     }
     
     private static void addNamedEntitiesToNESet(Document document) {
