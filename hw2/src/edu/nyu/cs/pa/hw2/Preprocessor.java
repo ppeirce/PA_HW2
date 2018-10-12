@@ -9,29 +9,45 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
+import edu.stanford.nlp.simple.Document;
+import edu.stanford.nlp.simple.Sentence;
+
 public final class Preprocessor {
     private static Set<String> stopWordSet = new HashSet<String>();
     
     static void removeStopWordsFromTextFile(File file) throws IOException {
+        File outFile = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
+        outFile.mkdirs();
+        
         // must populate the set the first time this method is called,
         // it will remain populated for subsequent calls
         if (stopWordSet.isEmpty()) {
             fillStopWordSet();
         }
+                
+        String docString = generateStringFromDocument(file);
         
-        File outFile = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
-        outFile.mkdirs();
-        try (Scanner scanner = new Scanner(file);
-             BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
-            while (scanner.hasNext()) {
-                String next = scanner.next();
-                // if the word isn't a stop word: remove punctuation and make it lower case, then save it
-                if (!stopWordSet.contains(next)) {
-                    writer.write(next.replaceAll("[^a-zA-Z ]", "").toLowerCase());
-                    writer.write("\n");
+        Document doc = new Document(docString);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
+            for (Sentence sentence : doc.sentences()) {
+                for (String lemma : sentence.lemmas()) {
+                    if (!stopWordSet.contains(lemma)) {
+                        writer.write(lemma);
+                        writer.write("\n");
+                    }
                 }
             }
+        } 
+    }
+    
+    private static String generateStringFromDocument(File file) throws IOException {
+        String documentString = "";
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNext()) {
+                documentString = documentString + scanner.next() + " ";
+            }
         }
+        return documentString;
     }
     
     private static String generateOutputFilePath(String inputPath, String subFolder) {

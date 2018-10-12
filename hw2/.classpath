@@ -10,6 +10,6 @@
 	<classpathentry kind="lib" path="lib/stanford-english-corenlp-2018-10-05-models.jar"/>
 	<classpathentry kind="lib" path="lib/stanford-english-kbp-corenlp-2018-10-05-models.jar"/>
 	<classpathentry kind="lib" path="lib/stanford-corenlp-3.9.2-models.jar"/>
-	<classpathentry kind="lib" path="lib/ejml-0.23.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
