@@ -13,6 +13,8 @@ public final class Preprocessor {
     private static Set<String> stopWordSet = new HashSet<String>();
     
     static void removeStopWordsFromTextFile(File file) throws IOException {
+        // must populate the set the first time this method is called,
+        // it will remain populated for subsequent calls
         if (stopWordSet.isEmpty()) {
             fillStopWordSet();
         }
@@ -23,8 +25,9 @@ public final class Preprocessor {
              BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
             while (scanner.hasNext()) {
                 String next = scanner.next();
+                // if the word isn't a stop word: remove punctuation and make it lower case, then save it
                 if (!stopWordSet.contains(next)) {
-                    writer.write(next);
+                    writer.write(next.replaceAll("[^a-zA-Z ]", "").toLowerCase());
                     writer.write("\n");
                 }
             }
