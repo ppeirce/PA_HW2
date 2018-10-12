@@ -15,7 +15,7 @@ import edu.stanford.nlp.simple.Sentence;
 public final class Preprocessor {
     private static Set<String> stopWordSet = new HashSet<String>();
     
-    static void removeStopWordsFromTextFile(File file) throws IOException {
+    static void removeStopWordsTokenizeStemLemmatize(File file) throws IOException {
         File outFile = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
         outFile.mkdirs();
         
@@ -26,10 +26,13 @@ public final class Preprocessor {
         }
                 
         String docString = generateStringFromDocument(file);
-        
         Document doc = new Document(docString);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
-            for (Sentence sentence : doc.sentences()) {
+        processDocumentAndSaveToFile(doc, outFile);
+    }
+    
+    private static void processDocumentAndSaveToFile(Document document, File file) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (Sentence sentence : document.sentences()) {
                 for (String lemma : sentence.lemmas()) {
                     if (!stopWordSet.contains(lemma)) {
                         writer.write(lemma);

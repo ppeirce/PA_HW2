@@ -6,7 +6,8 @@ import java.io.IOException;
 public class TextMiningDriver {
     public static void main(String[] args) throws IOException {                
         for (File file : DataFiles.FILES) {
-            Preprocessor.removeStopWordsFromTextFile(file);
+            Preprocessor.removeStopWordsTokenizeStemLemmatize(file);
+            
         }
     }
 }
