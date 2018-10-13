@@ -7,9 +7,9 @@ public class TextMiningDriver {
     public static void main(String[] args) throws IOException {                
         for (File file : DataFiles.FILES) {
             Preprocessor.removeStopWordsTokenizeStemLemmatize(file);
+            Preprocessor.clearStopWordSet();
             Preprocessor.extractNER(file);
             Preprocessor.slidingWindow(file);
-            Preprocessor.clearStopWordSet();
         }
     }
 }
