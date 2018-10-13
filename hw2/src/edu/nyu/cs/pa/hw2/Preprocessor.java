@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -15,7 +17,8 @@ import edu.stanford.nlp.simple.Sentence;
 public final class Preprocessor {
     private static Set<String> stopWordSet = new HashSet<String>();
     private static Set<String> NESet = new HashSet<String>();
-    private static File outFile;
+    private static File outFileSWTSL;
+    private static File outFileNER;
     private static String docString;
     
     static void removeStopWordsTokenizeStemLemmatize(File file) throws IOException {
@@ -25,21 +28,91 @@ public final class Preprocessor {
             fillStopWordSet();
         }
         
-        outFile = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
+        outFileSWTSL = new File(generateOutputFilePath(file.toString(), "removeStopWords"));
         docString = generateStringFromDocument(file);
         Document doc = new Document(docString);
-        removeStopWordsLemmatizeAndSave(doc, outFile);
+        removeStopWordsLemmatizeAndSave(doc, outFileSWTSL);
     }
     
     static void extractNER(File file) throws IOException {
         // the input file is the last outFile. Generate a new output file
         // apply NER to the input and save it
-        File outFileNER = new File(generateOutputFilePath(file.toString(), "applyNER"));
-        docString = generateStringFromDocument(outFile);
+        outFileNER = new File(generateOutputFilePath(file.toString(), "applyNER"));
+        docString = generateStringFromDocument(outFileSWTSL);
         Document doc = new Document(docString);
         addNamedEntitiesToNESet(doc);
         applyNamedEntityExtractionAndSave(doc, outFileNER);
+    }
+    
+    static void slidingWindow(File file) throws IOException {
+//        File outFileSW = new File(generateOutputFilePath(file.toString(), "applySW"));
+        File testFile = new File("data/applyNER/C1/article01.txt");
+        docString = generateStringFromDocument(testFile);
+        Document doc = new Document(docString);
+        
+        String[] words = docString.split(" ");
+        
+//        for (String word: words) {
+//            System.out.println(word);
+//         }
+        
+        // test 3-grams
+        Map<String, Integer> threeGrams = new HashMap<String, Integer>();
+        for (int i = 0; i < words.length-2; i++) {
+            String threeGram = words[i] + " " + words[i+1] + " " + words[i+2];
+            if (!threeGrams.containsKey(threeGram)) {
+                threeGrams.put(threeGram, 1);
+            } else {
+                threeGrams.put(threeGram, threeGrams.get(threeGram) + 1);
+            }
+        }
+        System.out.println(threeGrams.toString());
+        Map<String, Integer> filteredThreeGrams = new HashMap<String, Integer>();
+        for (Map.Entry<String, Integer> entry : threeGrams.entrySet()) {
+            String threeGram = entry.getKey();
+            Integer count = entry.getValue();
+            if (count > 3) {
+                filteredThreeGrams.put(threeGram, count);
+            }
+        }
+        System.out.println(filteredThreeGrams.toString());
 
+        
+        // test 2-grams
+        Map<String, Integer> twoGrams = new HashMap<String, Integer>();
+        for (int i = 0; i < words.length-1; i++) {
+            String twoGram = words[i] + " " + words[i+1];
+            if (!twoGrams.containsKey(twoGram)) {
+                twoGrams.put(twoGram, 1);
+            } else {
+                twoGrams.put(twoGram, twoGrams.get(twoGram) + 1);
+            }
+        }
+        System.out.println(twoGrams.toString());
+        Map<String, Integer> filteredTwoGrams = new HashMap<String, Integer>();
+        for (Map.Entry<String, Integer> entry : twoGrams.entrySet()) {
+            String twoGram = entry.getKey();
+            Integer count = entry.getValue();
+            if (count > 3) {
+                filteredTwoGrams.put(twoGram, count);
+            }
+        }
+        System.out.println(filteredTwoGrams.toString());
+        
+        for (Sentence sentence : doc.sentences()) {
+            String s = sentence.toString();
+            for (String threeGram : filteredThreeGrams.keySet()) {
+                if (s.contains(threeGram)) {
+                    s = s.replaceAll(threeGram, threeGram.replaceAll(" ", "_"));
+                }
+            }
+            for (String twoGram : filteredTwoGrams.keySet()) {
+                if (s.contains(twoGram)) {
+                    s = s.replaceAll(twoGram, twoGram.replaceAll(" ", "_"));
+                }
+            }
+            System.out.println(s);
+        }
     }
     
     private static void addNamedEntitiesToNESet(Document document) {
@@ -103,5 +176,9 @@ public final class Preprocessor {
                 stopWordSet.add(scanner.next());
             }
         }
+    }
+    
+    static void clearStopWordSet() {
+        stopWordSet.clear();
     }
 }
