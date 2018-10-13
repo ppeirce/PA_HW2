@@ -45,19 +45,17 @@ public final class Preprocessor {
     }
     
     static void slidingWindow(File file) throws IOException {
-//        File outFileSW = new File(generateOutputFilePath(file.toString(), "applySW"));
-        File testFile = new File("data/applyNER/C1/article01.txt");
-        docString = generateStringFromDocument(testFile);
-        Document doc = new Document(docString);
-        
-        String[] words = docString.split(" ");
-        
-//        for (String word: words) {
-//            System.out.println(word);
-//         }
-        
-        // test 3-grams
+        File outFileSW = new File(generateOutputFilePath(file.toString(), "applySW"));
+        String docAsString = generateStringFromDocument(outFileNER);
+        Map<String, Integer> multipleThreeGrams = generateFilteredThreeGrams(docAsString);
+        mergeNGrams(docAsString, multipleThreeGrams, outFileSW);
+        Map<String, Integer> multipleTwoGrams = generateFilteredTwoGrams(docAsString);
+        mergeNGrams(docAsString, multipleTwoGrams, outFileSW);        
+    }
+    
+    private static Map<String, Integer> generateFilteredThreeGrams(String document) {
         Map<String, Integer> threeGrams = new HashMap<String, Integer>();
+        String[] words = document.split(" ");
         for (int i = 0; i < words.length-2; i++) {
             String threeGram = words[i] + " " + words[i+1] + " " + words[i+2];
             if (!threeGrams.containsKey(threeGram)) {
@@ -66,7 +64,7 @@ public final class Preprocessor {
                 threeGrams.put(threeGram, threeGrams.get(threeGram) + 1);
             }
         }
-        System.out.println(threeGrams.toString());
+        
         Map<String, Integer> filteredThreeGrams = new HashMap<String, Integer>();
         for (Map.Entry<String, Integer> entry : threeGrams.entrySet()) {
             String threeGram = entry.getKey();
@@ -75,11 +73,13 @@ public final class Preprocessor {
                 filteredThreeGrams.put(threeGram, count);
             }
         }
-        System.out.println(filteredThreeGrams.toString());
 
-        
-        // test 2-grams
+        return filteredThreeGrams;
+    }
+    
+    private static Map<String, Integer> generateFilteredTwoGrams(String document) {
         Map<String, Integer> twoGrams = new HashMap<String, Integer>();
+        String[] words = document.split(" ");
         for (int i = 0; i < words.length-1; i++) {
             String twoGram = words[i] + " " + words[i+1];
             if (!twoGrams.containsKey(twoGram)) {
@@ -88,7 +88,7 @@ public final class Preprocessor {
                 twoGrams.put(twoGram, twoGrams.get(twoGram) + 1);
             }
         }
-        System.out.println(twoGrams.toString());
+        
         Map<String, Integer> filteredTwoGrams = new HashMap<String, Integer>();
         for (Map.Entry<String, Integer> entry : twoGrams.entrySet()) {
             String twoGram = entry.getKey();
@@ -97,23 +97,20 @@ public final class Preprocessor {
                 filteredTwoGrams.put(twoGram, count);
             }
         }
-        System.out.println(filteredTwoGrams.toString());
         
-        for (Sentence sentence : doc.sentences()) {
-            String s = sentence.toString();
-            for (String threeGram : filteredThreeGrams.keySet()) {
-                if (s.contains(threeGram)) {
-                    s = s.replaceAll(threeGram, threeGram.replaceAll(" ", "_"));
-                }
-            }
-            for (String twoGram : filteredTwoGrams.keySet()) {
-                if (s.contains(twoGram)) {
-                    s = s.replaceAll(twoGram, twoGram.replaceAll(" ", "_"));
-                }
-            }
-            System.out.println(s);
-        }
+        return filteredTwoGrams;
     }
+    
+    private static void mergeNGrams(String doc, Map<String, Integer> multipleNGrams, File file) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (String nGram : multipleNGrams.keySet()) {
+                if (doc.contains(nGram)) {
+                    doc = doc.replaceAll(nGram, nGram.replaceAll(" ", "_"));
+                }
+            }
+            writer.write(doc);
+        }
+    }    
     
     private static void addNamedEntitiesToNESet(Document document) {
         for (Sentence sentence : document.sentences()) {
