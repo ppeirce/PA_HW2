@@ -3,6 +3,7 @@ package edu.nyu.cs.pa.hw2;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -86,12 +87,80 @@ public class MatrixGenerator {
                 tfRow[i] = tfRow[i] * idfArray[i];
             }
         }
+                
+        return tfMatrix;
+    }
+
+    static String[][] generateKeywords(TreeSet<String> setOfAllTerms, double[][] tfidfTransformedMatrix) {
+        String[][] keywords = new String[3][3];
+        // first step: merge each group of 8 documents from the tfidf matrix so there are 3 Arrays
+        double[][] mergedDocumentFolders = MatrixGenerator.createMergedDocuments(tfidfTransformedMatrix);
         
-        for (double d : tfMatrix[0]) {
-            System.out.print(d + " ");
+        // find largest value in array
+        // iterate over the array by index
+        // when a new largest value is found, save the index
+        // to find the top 5 largest values, save 5 indices initialized to zero
+        // if a new value is larger than the first saved value, replace the fifth largest with the fourth, the
+        // fourth with the third, the third with the second, the second with the first, and the first with the new
+        int folderIndex = 0;
+        for (double[] documentArray : mergedDocumentFolders) {
+            // TODO find the index of the five largest values in the array
+            int[] largestThree = {0, 0, 0};
+            double[] largestThreeValues = { 0.0, 0.0, 0.0 };
+            for (int i = 0; i < documentArray.length; i++) {
+                if (documentArray[i] > documentArray[largestThree[0]]) {
+                    largestThree[2] = largestThree[1];
+                    largestThree[1] = largestThree[0];
+                    largestThree[0] = i;
+                    
+                    largestThreeValues[2] = largestThreeValues[1];
+                    largestThreeValues[1] = largestThreeValues[0];
+                    largestThreeValues[0] = documentArray[i];
+                    
+                    keywords[folderIndex][2] = keywords[folderIndex][1];
+                    keywords[folderIndex][1] = keywords[folderIndex][0];
+                    keywords[folderIndex][0] = getKthElementFromTreeSet(largestThree[0], setOfAllTerms);
+                    
+                    System.out.println(Arrays.toString(largestThree));
+                    System.out.println(Arrays.toString(largestThreeValues));
+                    System.out.println(Arrays.toString(keywords[folderIndex]));
+                }
+            }
+            folderIndex += 1;
         }
         
-        return tfMatrix;
+        return keywords;
+    }
+    
+    private static String getKthElementFromTreeSet(int k, TreeSet<String> setOfAllTerms) {
+        Iterator<String> it = setOfAllTerms.iterator();
+        int i = 0;
+        String current = null;
+        while (it.hasNext() && i < k) {
+            current = it.next();
+            i++;
+        }
+//        System.out.println(i + " " + current);
+        return current;
+    }
+
+    private static double[][] createMergedDocuments(double[][] tfidfMatrix) {
+        double[] documentFolderOne = MatrixGenerator.mergeArrays(0, 8, tfidfMatrix);
+        double[] documentFolderTwo = MatrixGenerator.mergeArrays(8, 16, tfidfMatrix);
+        double[] documentFolderThree = MatrixGenerator.mergeArrays(16, 24, tfidfMatrix);
+        double[][] mergedDocumentFolders = { documentFolderOne, documentFolderTwo, documentFolderThree };
+        return mergedDocumentFolders;
+    }
+
+    private static double[] mergeArrays(int firstFile, int lastFile, double[][] tfidfMatrix) {
+        double[] mergedArray = new double[tfidfMatrix[firstFile].length];
+        for (int i = firstFile; i < lastFile; i++) {
+            for (int j = 0; j < mergedArray.length; j++) {
+                mergedArray[j] += tfidfMatrix[i][j];
+            }
+        }
+        
+        return mergedArray;
     }
     
 }

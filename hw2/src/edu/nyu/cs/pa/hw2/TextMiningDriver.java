@@ -29,6 +29,6 @@ public class TextMiningDriver {
         // in order for a method to accomplish this, it needs: the TreeSet setOfAllTerms (to retrieve the 
         // associated Strings based on their index) and the double[][] tfidfTransformedMatrix (to find
         // the most important terms for each document)
-        
+        String[][] keywordsByDocumentFolder = MatrixGenerator.generateKeywords(setOfAllTerms, tfidfTransformedMatrix);
     }
 }
