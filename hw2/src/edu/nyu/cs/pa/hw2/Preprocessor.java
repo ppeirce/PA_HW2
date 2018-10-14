@@ -44,13 +44,15 @@ public final class Preprocessor {
         applyNamedEntityExtractionAndSave(doc, outFileNER);
     }
     
-    static void slidingWindow(File file) throws IOException {
+    static File slidingWindow(File file) throws IOException {
         File outFileSW = new File(generateOutputFilePath(file.toString(), "applySW"));
         String docAsString = generateStringFromDocument(outFileNER);
         Map<String, Integer> multipleThreeGrams = generateFilteredThreeGrams(docAsString);
         mergeNGrams(docAsString, multipleThreeGrams, outFileSW);
         Map<String, Integer> multipleTwoGrams = generateFilteredTwoGrams(docAsString);
-        mergeNGrams(docAsString, multipleTwoGrams, outFileSW);        
+        mergeNGrams(docAsString, multipleTwoGrams, outFileSW);       
+        
+        return outFileSW;
     }
     
     private static Map<String, Integer> generateFilteredThreeGrams(String document) {
@@ -149,7 +151,7 @@ public final class Preprocessor {
         } 
     }
     
-    private static String generateStringFromDocument(File file) throws IOException {
+    static String generateStringFromDocument(File file) throws IOException {
         String documentString = "";
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNext()) {

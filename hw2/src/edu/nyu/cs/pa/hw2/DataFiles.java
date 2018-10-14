@@ -31,7 +31,7 @@ public class DataFiles {
     static final File DATA_C77 = new File("data/original/C7/article07.txt");
     static final File DATA_C78 = new File("data/original/C7/article08.txt");
     
-    static final File[] FILES = {
+    static final File[] ORIGINAL_FILES = {
             DATA_C11, DATA_C12, DATA_C13, DATA_C14, DATA_C15, DATA_C16, DATA_C17, DATA_C18,
             DATA_C41, DATA_C42, DATA_C43, DATA_C44, DATA_C45, DATA_C46, DATA_C47, DATA_C48,
             DATA_C71, DATA_C72, DATA_C73, DATA_C74, DATA_C75, DATA_C76, DATA_C77, DATA_C78};
