@@ -2,6 +2,7 @@ package edu.nyu.cs.pa.hw2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -18,26 +19,29 @@ public class MatrixGenerator {
                 setOfAllTerms.add(word);
             }
         }
-        
+        for (String term : setOfAllTerms) {
+//            System.out.print(term + " ");
+        }
+//        System.out.println();
+        List<String> listOfAllTerms = new ArrayList<String>();
+        listOfAllTerms.addAll(setOfAllTerms);
+        for (String term : listOfAllTerms) {
+//            System.out.print(term + " ");
+        }
         return setOfAllTerms;
     }
 
     static int[][] fillDocumentTermMatrix(TreeSet<String> setOfAllTerms, List<File> preprocessedFiles) throws IOException {
         int[][] dtMatrix = new int[DataFiles.ORIGINAL_FILES.length][setOfAllTerms.size()];
         int rowToFill = 0;
+        List<String> listOfAllTerms = new ArrayList<String>();
+        listOfAllTerms.addAll(setOfAllTerms);
+        
         for (File file : preprocessedFiles) {
             String document = Preprocessor.generateStringFromDocument(file);
             String[] words = document.split(" ");
             for (String word : words) {
-                // This is a potentially confusing line of code. Here's an explanation:
-                // In order to correctly fill the document term matrix, we need to know the correct index 
-                // in the matrix of the term that was found in the document. We use the TreeSet terms (which is
-                // sorted) to do this. TreeSet has a method which returns a subset of the original set
-                // that contains only items which are strictly less than the passed object. In this case, 
-                // we pass in the term we're looking for, creating a new subset of terms where the searched
-                // term is the last object in the set. The size of this new set corresponds to the index of
-                // the searched term in the original set and the column index the document-term matrix. 
-                dtMatrix[rowToFill][setOfAllTerms.headSet(word).size()] += 1;
+                dtMatrix[rowToFill][listOfAllTerms.indexOf(word)] += 1;
             }
             rowToFill += 1;
         }
@@ -121,13 +125,15 @@ public class MatrixGenerator {
                     keywords[folderIndex][1] = keywords[folderIndex][0];
                     keywords[folderIndex][0] = getKthElementFromTreeSet(largestThree[0], setOfAllTerms);
                     
-                    System.out.println(Arrays.toString(largestThree));
-                    System.out.println(Arrays.toString(largestThreeValues));
-                    System.out.println(Arrays.toString(keywords[folderIndex]));
+//                    System.out.println(Arrays.toString(largestThree));
+//                    System.out.println(Arrays.toString(largestThreeValues));
+//                    System.out.println(Arrays.toString(keywords[folderIndex]));
                 }
             }
+            System.out.println(Arrays.toString(keywords[folderIndex]));
             folderIndex += 1;
         }
+        
         
         return keywords;
     }
@@ -140,7 +146,6 @@ public class MatrixGenerator {
             current = it.next();
             i++;
         }
-//        System.out.println(i + " " + current);
         return current;
     }
 
