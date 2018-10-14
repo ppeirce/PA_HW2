@@ -17,15 +17,18 @@ public class TextMiningDriver {
             preprocessedFiles.add(Preprocessor.slidingWindow(file));
         }
         
-        TreeSet<String> terms = MatrixGenerator.createSetOfAllTerms(preprocessedFiles);
-        System.out.println(terms.size());
-        System.out.println(terms.toString());
-        int[][] documentTermMatrix = MatrixGenerator.fillDocumentTermMatrix(terms, preprocessedFiles);
-//        for (int[] document : documentTermMatrix) {
-//            for (int termCount : document) {
-//                System.out.print(termCount + " ");
-//            }
-//            System.out.println();
-//        }
+        TreeSet<String> setOfAllTerms = MatrixGenerator.createSetOfAllTerms(preprocessedFiles);
+        int[][] documentTermMatrix = MatrixGenerator.fillDocumentTermMatrix(setOfAllTerms, preprocessedFiles);
+        double[][] tfidfTransformedMatrix = MatrixGenerator.transformMatrixWithTFIDF(documentTermMatrix);
+        
+        // TODO
+        // next step: for each document folder (group of 8 documents), combine the vectors, find the 
+        // top n-occuring keywords for each folder (5? 10? more?)
+        // to be returned: an array of three arrays, one for each document folder, each containing 
+        // the top-n-occuring keyword strings
+        // in order for a method to accomplish this, it needs: the TreeSet setOfAllTerms (to retrieve the 
+        // associated Strings based on their index) and the double[][] tfidfTransformedMatrix (to find
+        // the most important terms for each document)
+        
     }
 }
