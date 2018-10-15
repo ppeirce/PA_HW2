@@ -88,7 +88,9 @@ public class MatrixGenerator {
         // now apply the IDF value for each term to the corresponding value in each document in the matrix
         for (double[] tfRow : tfMatrix) {
             for (int i = 0; i < tfRow.length; i++) {
-                tfRow[i] = tfRow[i] * idfArray[i];
+                if (tfRow[i] != 0) {
+                    tfRow[i] = tfRow[i] * idfArray[i];
+                }
             }
         }
                 
@@ -157,6 +159,7 @@ public class MatrixGenerator {
         return mergedDocumentFolders;
     }
 
+    // TODO reread this to make sure it's doing the right thing
     private static double[] mergeArrays(int firstFile, int lastFile, double[][] tfidfMatrix) {
         double[] mergedArray = new double[tfidfMatrix[firstFile].length];
         for (int i = firstFile; i < lastFile; i++) {
