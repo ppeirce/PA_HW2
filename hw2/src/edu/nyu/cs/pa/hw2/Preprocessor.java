@@ -142,7 +142,7 @@ public final class Preprocessor {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             for (Sentence sentence : document.sentences()) {
                 for (String lemma : sentence.lemmas()) {
-                    if (!stopWordSet.contains(lemma)) {
+                    if (!stopWordSet.contains(lemma) && !lemma.matches(".*\\d+.*")) {
                         writer.write(lemma);
                         writer.write("\n");
                     }

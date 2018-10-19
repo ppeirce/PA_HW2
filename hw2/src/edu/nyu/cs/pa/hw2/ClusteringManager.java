@@ -1,16 +1,174 @@
 package edu.nyu.cs.pa.hw2;
 
-public class ClusteringManager {
-    private double[][] tfidfMatrix;
-    private int k;
-    private Similarity similarityType;
+import java.util.Arrays;
 
-    public ClusteringManager(double[][] tfidfMatrix, int k, Similarity euclidean) {
+public class ClusteringManager {
+    private final double[][] tfidfMatrix;
+    private final Similarity similarityType;
+    private int k;
+    private double[][] prototypes;
+    public int[][] clusters;
+    
+    private final int CLUSTER_UPDATE_LIMIT = 1000;
+
+    public ClusteringManager(double[][] tfidfMatrix, Similarity s) {
         this.tfidfMatrix = tfidfMatrix;
-        this.k = k;
-        this.similarityType = euclidean;
+        this.similarityType = s;
     }
     
+    // TODO
+    // this is the "driving" method for k means algorithm 
+    // it will iteratively update the prototypes until they stop changing
+    // then it will return k arrays of ints, each array being a cluster and each int referring to a document
+    public int[][] cluster(int k) {
+        int numLoops = 0;
+        this.k = k;
+        this.prototypes = generateKPrototypes(k, tfidfMatrix);
+        clusters = new int[k][tfidfMatrix.length];
+        boolean clustersAreStable = false;
+        
+        // for each document vector, calculate the distance to the three prototypes, then assign 
+        // it to the cluster with the closest one
+        while ((!clustersAreStable) && (numLoops < CLUSTER_UPDATE_LIMIT)) {
+            int[][] newClusters = calculateNewClusters();
+            numLoops++;
+            // update the prototypes as the average of their clusters
+            updatePrototypes(newClusters);
+            
+            // if the clusters haven't changed, the clusters are final and we stop updating
+            clustersAreStable = Arrays.deepEquals(clusters, newClusters);
+//            logClusters(clustersAreStable, newClusters, clusters);
+            // otherwise, we set the clusters to their new values and go again
+            clusters = deepCopy(newClusters);
+//            copyValuesToFirstFromMatrix(clusters, newClusters);
+        }
+        System.out.println("**Final cluster:");
+        for (int[] cluster : clusters) {
+            System.out.println(Arrays.toString(cluster));
+        }
+        return clusters;
+    }
     
+    private int[][] calculateNewClusters() {
+        int[][] newClusters = new int[k][tfidfMatrix.length];
+        // for each document vector, assign it to the correct cluster based on its distance to the prototypes
+        for (int i = 0; i < tfidfMatrix.length; i++) {
+            // for each prototype, calculate the distance and find and save the shortest one
+            int shortestIndex = 0;
+            double shortestDistance = Double.MAX_VALUE;
+            for (int j = 0; j < prototypes.length; j++) {
+                double distance;
+                if (similarityType == Similarity.EUCLIDEAN) {
+                    distance = findEuclidianDistance(prototypes[j], tfidfMatrix[i]);
+                } else {
+                    distance = findCosineSimilarity(prototypes[j], tfidfMatrix[i]);
+                }
+                if (distance < shortestDistance) {
+                    shortestIndex = j;
+                    shortestDistance = distance;
+                }
+            }
+            // now put the int representing the matrix in the cluster
+            newClusters[shortestIndex][i] = 1;
+        }
 
+        return newClusters;
+    }
+    
+    private int[][] deepCopy(int[][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final int[][] result = new int[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            result[i] = Arrays.copyOf(original[i], original[i].length);
+        }
+        return result;
+
+    }
+    
+    private void updatePrototypes(int[][] updateClusters) {        
+        for (int i = 0; i < k; i++) {
+            double[] averages = new double[tfidfMatrix[0].length];
+            int countInCluster = 0;
+            for (int j = 0; j < updateClusters[i].length; j++) {
+                if (updateClusters[i][j] == 1) {  // it belongs in this cluster, add its values to the sum matrix
+                    countInCluster += 1;
+                    for (int a = 0; a < tfidfMatrix.length; a++) {
+                        averages[a] += tfidfMatrix[j][a];
+                    }
+                }
+            }
+            for (int j = 0; j < averages.length; j++) {
+                averages[j] = averages[j] / countInCluster;
+            }
+            prototypes[i] = averages;
+        }
+    }
+    
+    public static double findCosineSimilarity(double[] a, double[] b) {
+        double normalA = 0.0;
+        double normalB = 0.0;
+        double dotProduct = 0.0;
+        for (int i = 0; i < a.length; i++) {
+            normalA += Math.pow(a[i], 2);
+            normalB += Math.pow(b[i], 2);
+            dotProduct += a[i] * b[i];
+        }   
+        return dotProduct / (Math.sqrt(normalA) * Math.sqrt(normalB));
+    }
+    
+    private double findEuclidianDistance(double[] a, double[] b) {
+        double distance = 0;
+        for (int i = 0; i < a.length; i++) {
+            distance += (b[i] - a[i]) * (b[i] - a[i]);
+        }
+        return Math.sqrt(distance);
+    }
+    
+    private void logClusters(boolean clustersAreStable, int[][] newClusters, int[][] clusters2) {
+//        System.out.println();
+//        System.out.println(clustersAreStable);
+//        System.out.println("clusters");
+//        for (int[] cluster : clusters) {
+//            System.out.println(Arrays.toString(cluster));
+//        }
+        System.out.println("newClusters");
+        for (int[] cluster : newClusters) {
+            System.out.println(Arrays.toString(cluster));
+        }
+        System.out.println();        
+    }
+
+    private double[][] generateKPrototypes(int k, double[][] tfidfMatrix) {
+        double[] maxTFIDFValuesMatrix = findMaxValuesForEachDimension(tfidfMatrix);
+        double[][] prototypes = new double[k][tfidfMatrix[0].length];
+        for (double[] prototype : prototypes) {
+            for (int i = 0; i < prototype.length; i++) {
+                prototype[i] = Math.random() * maxTFIDFValuesMatrix[i];
+            }
+        }
+        
+        return prototypes;
+    }
+    
+    public void printPrototypes() {
+        for (double[] prototype : prototypes) {
+            System.out.println(Arrays.toString(prototype));
+        }
+    }
+
+    private double[] findMaxValuesForEachDimension(double[][] matrix) {
+        double[] maxValues = new double[matrix[0].length];
+        for (double[] vector : matrix) {
+            for (int i = 0; i < vector.length; i++) {
+                if (vector[i] > maxValues[i]) {
+                    maxValues[i] = vector[i];
+                }
+            }
+        }
+        return maxValues;
+    }
+    
 }

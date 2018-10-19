@@ -12,6 +12,7 @@ public class TextMiningDriver {
     private static String[][] keywordsForDocumentFoldersMatrix;
     private static ClusteringManager clusteredMatricesByEuclideanDistance;
     private static ClusteringManager clusteredMatricesByCosineSimilarity;
+    private static Evaluator evaluator;
     
     private static double[][] tfidfMatrixGenerator() throws IOException {
         for (File file : DataFiles.ORIGINAL_FILES) {
@@ -22,6 +23,8 @@ public class TextMiningDriver {
         }
         
         TreeSet<String> setOfAllTerms = MatrixGenerator.createSetOfAllTerms(preprocessedFiles);
+        List<String> listofAllTerms = new ArrayList<String>();
+        listofAllTerms.addAll(setOfAllTerms);
         int[][] documentTermMatrix = MatrixGenerator.fillDocumentTermMatrix(setOfAllTerms, preprocessedFiles);
         double[][] tfidfTransformedMatrix = MatrixGenerator.transformMatrixWithTFIDF(documentTermMatrix);
         keywordsForDocumentFoldersMatrix = MatrixGenerator.generateKeywords(setOfAllTerms, tfidfTransformedMatrix);
@@ -29,10 +32,28 @@ public class TextMiningDriver {
         return tfidfTransformedMatrix;
     }
     
+    private static void performClustering() {
+        clusteredMatricesByEuclideanDistance = new ClusteringManager(tfidfMatrix, Similarity.EUCLIDEAN);
+        clusteredMatricesByCosineSimilarity = new ClusteringManager(tfidfMatrix, Similarity.COSINE);
+
+        
+        System.out.println("Clustering based on Euclidiean distance:");
+        clusteredMatricesByEuclideanDistance.cluster(3);
+        System.out.println("Euclidean clustering complete.\n");
+        
+        System.out.println("Clustering based on Cosine similarity:");
+        clusteredMatricesByCosineSimilarity.cluster(3);
+        System.out.println("Cosine clustering complete.\n");
+    }
+    
+    private static void performEvaluation() {
+        
+    }
+    
     public static void main(String[] args) throws IOException {
         tfidfMatrix = tfidfMatrixGenerator();
-        clusteredMatricesByEuclideanDistance = new ClusteringManager(tfidfMatrix, 3, Similarity.EUCLIDEAN);
-        clusteredMatricesByCosineSimilarity = new ClusteringManager(tfidfMatrix, 3, Similarity.COSINE);        
+        performClustering();
+        performEvaluation();
     }
 
 }

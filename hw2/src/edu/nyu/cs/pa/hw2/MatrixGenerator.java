@@ -148,8 +148,7 @@ public class MatrixGenerator {
 //            System.out.println(listofAllTerms.get(firstLargestIndex) + "|" + firstLargestIndex + "|" + documentArray[firstLargestIndex]);
 //            System.out.println(listofAllTerms.get(secondLargestIndex) + "|" + secondLargestIndex + "|" + documentArray[secondLargestIndex]);
 //            System.out.println(listofAllTerms.get(thirdLargestIndex) + "|" + thirdLargestIndex + "|" + documentArray[thirdLargestIndex]);
-            
-            System.out.println(Arrays.toString(keywords[folderIndex]));
+//            System.out.println(Arrays.toString(keywords[folderIndex]));
             folderIndex += 1;
         }
         
