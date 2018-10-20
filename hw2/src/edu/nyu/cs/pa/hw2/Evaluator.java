@@ -36,16 +36,18 @@ public class Evaluator {
     }
     
     // number of relevant items retrieved / total number of relevant items
-    public double[] generateRecall() {
+    private double[] generateRecall() {
         recallScores = new double[3];
         for (int i = 0; i < recallScores.length; i++) {
             recallScores[i] = confusionMatrix[i][i] / 8.0;
         }
+        System.out.println("Recall scores:");
+        System.out.println(Arrays.toString(recallScores));
         return recallScores;
     }
 
     // number of relevant items retrieved / total number of items retrieved
-    public double[] generatePrecision() {
+    private double[] generatePrecision() {
         precisionScores = new double[3];
         for (int i = 0; i < precisionScores.length; i++) {
             double rowSum = 0.0;
@@ -58,10 +60,14 @@ public class Evaluator {
                 precisionScores[i] = confusionMatrix[i][i] / rowSum;
             }
         }
+        System.out.println("Precision scores:");
+        System.out.println(Arrays.toString(precisionScores));
         return precisionScores;
     }
     
     public double[] generatef1Scores() {
+        generateRecall();
+        generatePrecision();
         f1Scores = new double[3];
         for (int i = 0; i < f1Scores.length; i++) {
             double numerator = precisionScores[i]*recallScores[i];
@@ -72,6 +78,8 @@ public class Evaluator {
                 f1Scores[i] = (2 * (numerator/denominator));
             }
         }
+        System.out.println("F1 scores:");
+        System.out.println(Arrays.toString(f1Scores));
         return f1Scores;
     }
 }

@@ -1,10 +1,10 @@
 package edu.nyu.cs.pa.hw2;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -19,15 +19,8 @@ public class MatrixGenerator {
                 setOfAllTerms.add(word);
             }
         }
-        for (String term : setOfAllTerms) {
-//            System.out.print(term + " ");
-        }
-//        System.out.println();
         List<String> listOfAllTerms = new ArrayList<String>();
         listOfAllTerms.addAll(setOfAllTerms);
-        for (String term : listOfAllTerms) {
-//            System.out.print(term + " ");
-        }
         return setOfAllTerms;
     }
 
@@ -97,7 +90,7 @@ public class MatrixGenerator {
         return tfMatrix;
     }
 
-    static String[][] generateKeywords(TreeSet<String> setOfAllTerms, double[][] tfidfTransformedMatrix) {
+    static String[][] generateKeywords(TreeSet<String> setOfAllTerms, double[][] tfidfTransformedMatrix) throws IOException {
         List<String> listofAllTerms = new ArrayList<String>();
         listofAllTerms.addAll(setOfAllTerms);
         
@@ -145,18 +138,26 @@ public class MatrixGenerator {
             keywords[folderIndex][1] = listofAllTerms.get(secondLargestIndex);
             keywords[folderIndex][2] = listofAllTerms.get(thirdLargestIndex);            
 
-//            System.out.println(listofAllTerms.get(firstLargestIndex) + "|" + firstLargestIndex + "|" + documentArray[firstLargestIndex]);
-//            System.out.println(listofAllTerms.get(secondLargestIndex) + "|" + secondLargestIndex + "|" + documentArray[secondLargestIndex]);
-//            System.out.println(listofAllTerms.get(thirdLargestIndex) + "|" + thirdLargestIndex + "|" + documentArray[thirdLargestIndex]);
-//            System.out.println(Arrays.toString(keywords[folderIndex]));
             folderIndex += 1;
         }
         
-        
+        File outFile = new File("keywords.txt");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
+            int folderNumber = 1;
+            for (String[] keyWordFolder : keywords) {
+                writer.write("Folder " + folderNumber++ + " Keywords: ");
+                String keywordString = "";
+                for (String keyword : keyWordFolder) {
+                    keywordString = keywordString + keyword + " ";
+                }
+                keywordString = keywordString + "\n";
+                writer.write(keywordString);
+            }
+        }
+
         return keywords;
     }
     
-
     private static double[][] createMergedDocuments(double[][] tfidfMatrix) {
         double[] documentFolderOne = MatrixGenerator.mergeArrays(0, 8, tfidfMatrix);
         double[] documentFolderTwo = MatrixGenerator.mergeArrays(8, 16, tfidfMatrix);
@@ -165,7 +166,6 @@ public class MatrixGenerator {
         return mergedDocumentFolders;
     }
 
-    // TODO reread this to make sure it's doing the right thing
     private static double[] mergeArrays(int firstFile, int lastFile, double[][] tfidfMatrix) {
         double[] mergedArray = new double[tfidfMatrix[firstFile].length];
         for (int i = firstFile; i < lastFile; i++) {
@@ -173,7 +173,6 @@ public class MatrixGenerator {
                 mergedArray[j] += tfidfMatrix[i][j];
             }
         }
-        
         return mergedArray;
     }
     

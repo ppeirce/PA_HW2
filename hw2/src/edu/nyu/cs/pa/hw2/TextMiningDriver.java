@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 
+import edu.nyu.cs.pa.hw2.ClusteringManager.ClusteringType;
+
 public class TextMiningDriver {
     private static List<File> preprocessedFiles = new ArrayList<File>();
     private static double[][] tfidfMatrix;
@@ -33,43 +35,14 @@ public class TextMiningDriver {
     }
     
     private static void performClustering(SimilarityType similarityType) {
-        switch (similarityType) {
-        case EUCLIDEAN: 
-            clusteredMatrices = new ClusteringManager(tfidfMatrix, SimilarityType.EUCLIDEAN);
-            System.out.println("Clustering based on Euclidiean distance:");
-            clusteredMatrices.cluster(3);
-            System.out.println("Euclidean clustering complete.\n");
-            break;
-        case COSINE:
-            clusteredMatrices = new ClusteringManager(tfidfMatrix, SimilarityType.COSINE);
-            System.out.println("Clustering based on Cosine similarity:");
-            clusteredMatrices.cluster(3);
-            System.out.println("Cosine clustering complete.\n");
-            break;
-        default:
-            break;
-        }
-        
-//        clusteredMatricesByEuclideanDistance = new ClusteringManager(tfidfMatrix, Similarity.EUCLIDEAN);
-//        clusteredMatricesByCosineSimilarity = new ClusteringManager(tfidfMatrix, Similarity.COSINE);
-//
-//        
-//        System.out.println("Clustering based on Euclidiean distance:");
-//        clusteredMatricesByEuclideanDistance.cluster(3);
-//        System.out.println("Euclidean clustering complete.\n");
-//        
-//        System.out.println("Clustering based on Cosine similarity:");
-//        clusteredMatricesByCosineSimilarity.cluster(3);
-//        System.out.println("Cosine clustering complete.\n");
+        clusteredMatrices = new ClusteringManager(tfidfMatrix, similarityType);
+        clusteredMatrices.cluster(3, ClusteringType.KMEANSPLUSPLUS);
     }
     
     private static void performEvaluation() {
         evaluator = new Evaluator(clusteredMatrices.clusters);
         int[][] confusionMatrix = evaluator.generateConfusionMatrix();
-        double[] recallScores = evaluator.generateRecall();
-        double[] precisionScores = evaluator.generatePrecision();
         double[] f1Scores = evaluator.generatef1Scores();
-        System.out.println(Arrays.toString(f1Scores));
     }
     
     public static void main(String[] args) throws IOException {
