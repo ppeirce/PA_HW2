@@ -4,14 +4,14 @@ import java.util.Arrays;
 
 public class ClusteringManager {
     private final double[][] tfidfMatrix;
-    private final Similarity similarityType;
+    private final SimilarityType similarityType;
     private int k;
     private double[][] prototypes;
     public int[][] clusters;
     
     private final int CLUSTER_UPDATE_LIMIT = 1000;
 
-    public ClusteringManager(double[][] tfidfMatrix, Similarity s) {
+    public ClusteringManager(double[][] tfidfMatrix, SimilarityType s) {
         this.tfidfMatrix = tfidfMatrix;
         this.similarityType = s;
     }
@@ -58,7 +58,7 @@ public class ClusteringManager {
             double shortestDistance = Double.MAX_VALUE;
             for (int j = 0; j < prototypes.length; j++) {
                 double distance;
-                if (similarityType == Similarity.EUCLIDEAN) {
+                if (similarityType == SimilarityType.EUCLIDEAN) {
                     distance = findEuclidianDistance(prototypes[j], tfidfMatrix[i]);
                 } else {
                     distance = findCosineSimilarity(prototypes[j], tfidfMatrix[i]);
